@@ -1,0 +1,113 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+
+// Создание структуры ячейки связанного списка
+typedef struct Node 
+{
+    int data; // Значение ячейки
+    struct Node* next; // Адрес следующей ячейки
+}Cell;
+
+// Функция сортировки списка
+void insert(Cell** head_ref, int new_data) 
+{
+    // Выделяем память под новый узел
+    Cell* new_node = (Cell *)malloc(sizeof(Cell));
+
+    // Указатель на последний узел
+    Cell* last = *head_ref;
+    // Заполняем данные нового узла
+    new_node->data = new_data;
+    new_node->next = NULL;
+    // Если список пуст, то новый узел становится головой списка
+    if (*head_ref == NULL) 
+    {
+        *head_ref = new_node;
+        return;
+    }
+    // Иначе ищем последний узел и добавляем новый узел в конец списка
+    while (last->next != NULL) 
+        last = last->next;
+    last->next = new_node;
+    return;
+}
+
+void rearrangeList(Cell** head_ref) 
+{   
+    // Указатель на первый чётный положительный элемент
+    Cell* even_positive_first = NULL;
+    // Указатель на последний чётный положительный элемент
+    Cell* even_positive_last = NULL;
+    // Текущий элемент списка
+    Cell* current = *head_ref;
+    // Предыдущий элемент списка
+    Cell* prev = NULL;
+
+    // Перебираем все элементы списка
+    while (current != NULL) 
+    {   
+        // Если текущий элемент чётный и положительный
+        if (current->data > 0 && current->data % 2 == 0) 
+        {   
+            // Если это первый чётный положительный элемент
+            if (even_positive_first == NULL) 
+            {
+                even_positive_first = current;
+                even_positive_last = current;
+            }
+
+            // Иначе добавляем текущий элемент в конец списка чётных положительных элементов
+            else 
+            {
+                even_positive_last->next = current;
+                even_positive_last = even_positive_last->next;
+            }
+
+            // Удаляем текущий элемент из текущей позиции списка
+            if (prev != NULL)
+                prev->next = current->next;
+            if (*head_ref == current)
+                *head_ref = current->next;
+        }
+        else
+            prev = current;
+
+        current = current->next;
+    }
+
+    // Если были найдены чётные положительные элементы, переставляем их в начало списка
+    if (even_positive_first != NULL)
+    {
+        even_positive_last->next = *head_ref;
+        *head_ref = even_positive_first;
+    }
+}
+
+// Функция вывода всех элементов списка
+void printList(Cell* node) {
+    while (node != NULL) {
+        printf("%d ", node->data);
+        node = node->next;
+    }
+    printf("\n");
+}
+
+int main() 
+{   
+    setlocale(0, "");
+    Cell* head = NULL;
+    int num;
+
+    printf("Введите числа через пробел (для завершения введите любой символ кроме цифр):\n");
+    // Считываем числа и добавляем их в список
+    while (scanf("%d", &num) == 1)
+        insert(&head, num);
+
+    rearrangeList(&head);
+    // Выводим изменённый список
+    printf("Переставленный список:\n"); 
+    printList(head);
+    return 0;
+}
